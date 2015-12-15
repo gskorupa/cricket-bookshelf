@@ -39,11 +39,7 @@ public class EventQueueMockAdapter implements EventQueueAdapterIface, Adapter{
     }
 
     public Event pull(String eventType){
-        Event event=new Event();
-        event.setData(null);
-        event.setOrigin("Mock");
-        event.setType(eventType);
-        event.setTimestamp(System.currentTimeMillis());
+        Event event=new Event(eventType, "MOCK", System.currentTimeMillis(), null);
         return event;
     }
 

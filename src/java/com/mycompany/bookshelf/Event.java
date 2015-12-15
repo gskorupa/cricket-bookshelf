@@ -11,10 +11,22 @@ package com.mycompany.bookshelf;
  */
 public class Event {
     
+    public static final String BOOK_NEW = "NEW";
+    public static final String BOOK_MODIFY = "MODIFY";
+    public static final String NEW_DEL = "DELETE";
+    public static final String NEW_SEARCH = "SEARCH";
+    
     private String type;
     private long timestamp;
     private String origin;
     private Object data;
+    
+    public Event(String type, String origin, long timestamp, Object data){
+        this.type=type;
+        this.origin=origin;
+        this.timestamp=timestamp;
+        this.data=data;
+    }
 
     /**
      * @return the type

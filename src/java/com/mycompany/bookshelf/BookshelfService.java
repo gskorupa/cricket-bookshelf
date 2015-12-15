@@ -15,11 +15,15 @@
  */
 package com.mycompany.bookshelf;
 
+import com.gskorupa.cricket.AdapterHook;
 import com.gskorupa.cricket.ArgumentParser;
+import com.gskorupa.cricket.HttpAdapter;
 import com.gskorupa.cricket.Httpd;
+import com.gskorupa.cricket.RequestObject;
 import java.util.logging.Logger;
 import com.gskorupa.cricket.Service;
 import static java.lang.Thread.MIN_PRIORITY;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -35,29 +39,61 @@ public class BookshelfService extends Service {
     // adapters
     DataStorageAdapterIface storageAdapter = null;
     EventQueueAdapterIface eventsAdapter = null;
-    //HttpAdapterIface httpAdapter = null;
+    BookshelfHttpAdapterIface httpAdapter = null;
 
     public BookshelfService() {
 
-        fields = new Object[2];
+        fields = new Object[3];
         fields[0] = storageAdapter;
         fields[1] = eventsAdapter;
-        //fields[2] = httpAdapter;
-        adapters = new Class[2];
+        fields[2] = httpAdapter;
+        adapters = new Class[3];
         adapters[0] = DataStorageAdapterIface.class;
         adapters[1] = EventQueueAdapterIface.class;
-        //adapters[2] = HttpAdapterIface.class;
+        adapters[2] = BookshelfHttpAdapterIface.class;
     }
 
     public void getAdapters() {
         storageAdapter = (DataStorageAdapterIface) super.fields[0];
         eventsAdapter = (EventQueueAdapterIface) super.fields[1];
-        //httpHandler = (HttpAdapterIface) super.fields[2];
+        httpAdapter = (BookshelfHttpAdapterIface) super.fields[2];
     }
 
     //
     public String sayHello() {
-        return "Hi! I'm "+ this.getClass().getSimpleName();
+        return "Hi! I'm " + this.getClass().getSimpleName();
+    }
+
+    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "POST")
+    public Object addBook(RequestObject request) {
+        HttpResult result = new HttpResult();
+
+        //create data object based on request parmeters
+        BookData book = new BookData();
+        book.setAuthor((String) request.parameters.get("author"));
+        book.setTitle((String) request.parameters.get("title"));
+        book.setPublisher((String) request.parameters.get("publisher"));
+        book.setPublishDate((String) request.parameters.get("publish-date"));
+
+        //store data object and add registered book data to the result
+        ArrayList books=new ArrayList();
+        books.add(storageAdapter.addBook(book));
+        result.setData(books);
+
+        //publish event
+        boolean eventPropagated
+                = EventQueueAdapterIface.OK == eventsAdapter.push(
+                        new Event(
+                                Event.BOOK_NEW,
+                                this.getClass().getSimpleName(),
+                                System.currentTimeMillis(),
+                                null)
+                );
+
+        //set result code which will be sent in http response
+        result.setCode(HttpAdapter.SC_CREATED);
+
+        return result;
     }
 
     /**
@@ -73,17 +109,17 @@ public class BookshelfService extends Service {
             System.exit(-1);
         }
         if (arguments.containsKey("help")) {
-            BookshelfService s=new BookshelfService(); //creating instance this way is valid only for displaing help!
+            BookshelfService s = new BookshelfService(); //creating instance this way is valid only for displaing help!
             System.out.println(s.getHelp());
             System.exit(-1);
         }
 
         try {
-            
+
             if (arguments.containsKey("config")) {
                 service = (BookshelfService) BookshelfService.getInstance(BookshelfService.class, arguments.get("config"));
             } else {
-                service = (BookshelfService) BookshelfService.getInstanceUsingResources(BookshelfService.class);    
+                service = (BookshelfService) BookshelfService.getInstanceUsingResources(BookshelfService.class);
             }
             service.getAdapters();
 
