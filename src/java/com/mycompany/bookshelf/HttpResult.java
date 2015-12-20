@@ -15,7 +15,7 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.Result;
+import com.gskorupa.cricket.in.Result;
 import java.util.List;
 
 /**

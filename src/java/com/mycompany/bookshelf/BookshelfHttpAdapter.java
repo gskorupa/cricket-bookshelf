@@ -16,10 +16,7 @@
 package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.Adapter;
-import com.gskorupa.cricket.HttpAdapter;
-import com.sun.net.httpserver.HttpHandler;
-
-
+import com.gskorupa.cricket.in.HttpAdapter;
 import java.util.Properties;
 
 /**

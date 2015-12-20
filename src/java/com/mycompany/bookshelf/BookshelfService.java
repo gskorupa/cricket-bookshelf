@@ -17,7 +17,7 @@ package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.AdapterHook;
 import com.gskorupa.cricket.ArgumentParser;
-import com.gskorupa.cricket.HttpAdapter;
+import com.gskorupa.cricket.in.HttpAdapter;
 import com.gskorupa.cricket.Httpd;
 import com.gskorupa.cricket.RequestObject;
 import java.util.logging.Logger;
