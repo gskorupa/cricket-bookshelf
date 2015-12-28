@@ -26,6 +26,8 @@ public interface DataStorageAdapterIface {
     public static int OK = 0;
     public static int NOT_FOUND = 10;
     public static int ALREADY_EXISTS = 20;
+    public static int ERROR = 30;
+    
     
     public BookData addBook(BookData data);
 

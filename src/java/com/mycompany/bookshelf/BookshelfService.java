@@ -53,15 +53,48 @@ public class BookshelfService extends Service {
         adapters[2] = BookshelfHttpAdapterIface.class;
     }
 
+    @Override
     public void getAdapters() {
         storageAdapter = (DataStorageAdapterIface) super.fields[0];
         eventsAdapter = (EventQueueAdapterIface) super.fields[1];
         httpAdapter = (BookshelfHttpAdapterIface) super.fields[2];
     }
 
-    //
-    public String sayHello() {
-        return "Hi! I'm " + this.getClass().getSimpleName();
+    @Override
+    public void runOnce() {
+        System.out.println("Hi! I'm " + this.getClass().getSimpleName());
+    }
+
+    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "GET")
+    public Object getBooks(RequestObject request) {
+        String uid = request.pathExt;
+        System.out.println("PATH_EXT="+request.pathExt);
+        if (uid.isEmpty()) {
+            BookData book=new BookData();
+            //TODO: parameters
+            return search(book);
+        } else {
+            return get(uid);
+            
+        }
+    }
+
+    private HttpResult get(String uid) {
+        HttpResult result = new HttpResult();
+        ArrayList books = new ArrayList();
+        BookData book=storageAdapter.getBook(uid);
+        if(book!=null){
+            books.add(book);
+            result.setCode(HttpAdapter.SC_OK);
+        }else{
+            result.setCode(HttpAdapter.SC_NOT_FOUND);
+        }
+        result.setData(books);
+        return result;
+    }
+
+    private HttpResult search(BookData book) {
+        return null;
     }
 
     @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "POST")
@@ -76,7 +109,8 @@ public class BookshelfService extends Service {
         book.setPublishDate((String) request.parameters.get("publish-date"));
 
         //store data object and add registered book data to the result
-        ArrayList books=new ArrayList();
+        //TODO: storage error?
+        ArrayList books = new ArrayList();
         books.add(storageAdapter.addBook(book));
         result.setData(books);
 
@@ -96,21 +130,63 @@ public class BookshelfService extends Service {
         return result;
     }
 
+    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "PUT")
+    public Object modifyBook(RequestObject request) {
+        HttpResult result = new HttpResult();
+
+        //TODO: get UID
+        String uid = request.pathExt;
+
+        //create data object based on request parmeters
+        BookData book = new BookData();
+        book.setID(uid);
+        book.setAuthor((String) request.parameters.get("author"));
+        book.setTitle((String) request.parameters.get("title"));
+        book.setPublisher((String) request.parameters.get("publisher"));
+        book.setPublishDate((String) request.parameters.get("publish-date"));
+
+        //store data object and add registered book data to the result
+        ArrayList books = new ArrayList();
+        int success = storageAdapter.modifyBook(book);
+        if (success == DataStorageAdapterIface.OK) {
+            books.add(storageAdapter.getBook(uid));
+            result.setData(books);
+            result.setCode(HttpAdapter.SC_ACCEPTED);
+        } else {
+            result.setData(books);
+            result.setCode(HttpAdapter.SC_NOT_FOUND);
+        }
+
+        //publish event
+        boolean eventPropagated
+                = EventQueueAdapterIface.OK == eventsAdapter.push(
+                        new Event(
+                                Event.BOOK_MODIFY,
+                                this.getClass().getSimpleName(),
+                                System.currentTimeMillis(),
+                                null)
+                );
+
+        return result;
+    }
+
+    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "DELETE")
+    public Object removeBook(RequestObject request) {
+        return null;
+    }
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
 
         final BookshelfService service;
-        Map<String, String> arguments = ArgumentParser.getArguments(args);
-
-        if (arguments.containsKey("error")) {
-            System.out.println(arguments.get("error"));
-            System.exit(-1);
-        }
-        if (arguments.containsKey("help")) {
-            BookshelfService s = new BookshelfService(); //creating instance this way is valid only for displaing help!
-            System.out.println(s.getHelp());
+        ArgumentParser arguments = new ArgumentParser(args);
+        if (arguments.isProblem()) {
+            if (arguments.containsKey("error")) {
+                System.out.println(arguments.get("error"));
+            }
+            System.out.println(new BookshelfService().getHelp());
             System.exit(-1);
         }
 
@@ -150,8 +226,7 @@ public class BookshelfService extends Service {
                     System.exit(MIN_PRIORITY);
                 }
             } else {
-                // say hello
-                System.out.println(service.sayHello());
+                service.runOnce();
             }
 
         } catch (Exception e) {
