@@ -18,25 +18,26 @@ package com.mycompany.bookshelf;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author greg
  */
-public class DataStorage {
+public class InMemDataStorage {
 
     public static int OK = 0;
 
-    private static DataStorage instance = null;
+    private static InMemDataStorage instance = null;
     private HashMap<String, BookData> books;
 
-    public DataStorage() {
+    public InMemDataStorage() {
         books = new HashMap();
     }
 
-    public static DataStorage getInstance() {
+    public static InMemDataStorage getInstance() {
         if (instance == null) {
-            instance = new DataStorage();
+            instance = new InMemDataStorage();
         }
         return instance;
     }
@@ -62,11 +63,38 @@ public class DataStorage {
         return OK;
     }
 
-    public List<BookData> search(BookData queryData) {
+    /**
+    * Returns a list of books matching example data.
+    * <p>
+    * This is simple implementation comparing titles only.
+    * Should be extended by adding, for instance, regexp.
+    * 
+    * @param    exampleData an example book data used as the search criteria
+    * @return               list of books matching search criteria
+    * @see BookData
+    */
+    public List<BookData> search(BookData exampleData) {
         ArrayList<BookData> list = new ArrayList();
+        BookData book;
+        boolean match=false;
+        for (Map.Entry<String, BookData> entry : books.entrySet()) {
+		book=entry.getValue();
+                match=true;
+                if(null!=exampleData.getTitle()){
+                    match = match && book.getTitle().equalsIgnoreCase(exampleData.getTitle());
+                }
+                if(match){
+                    list.add(book);
+                }
+	}
         return list;
     }
-
+    
+    /**
+     * Returns a new unique ID based on current system time (milliseconds).
+     * 
+     * @return  new unique identifier
+     */
     private synchronized String generateId() {
         long ts = System.currentTimeMillis();
         return "" + ts;

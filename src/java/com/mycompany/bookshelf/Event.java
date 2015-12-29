@@ -23,8 +23,8 @@ public class Event {
     
     public static final String BOOK_NEW = "NEW";
     public static final String BOOK_MODIFY = "MODIFY";
-    public static final String NEW_DEL = "DELETE";
-    public static final String NEW_SEARCH = "SEARCH";
+    public static final String BOOK_DEL = "DELETE";
+    public static final String BOOK_SEARCH = "SEARCH";
     
     private String type;
     private long timestamp;

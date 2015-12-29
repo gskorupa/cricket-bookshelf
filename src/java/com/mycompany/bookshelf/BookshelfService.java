@@ -67,25 +67,34 @@ public class BookshelfService extends Kernel {
     @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "GET")
     public Object getBooks(RequestObject request) {
         String uid = request.pathExt;
-        System.out.println("PATH_EXT="+request.pathExt);
+        //System.out.println("PATH_EXT=" + request.pathExt);
         if (uid.isEmpty()) {
-            BookData book=new BookData();
+            BookData book = new BookData();
             //TODO: parameters
             return search(book);
         } else {
             return get(uid);
-            
+
         }
     }
 
     private HttpResult get(String uid) {
         HttpResult result = new HttpResult();
         ArrayList books = new ArrayList();
-        BookData book=storageAdapter.getBook(uid);
-        if(book!=null){
+        //publish event
+        boolean eventPropagated
+                = EventQueueAdapterIface.OK == eventsAdapter.push(
+                        new Event(
+                                Event.BOOK_SEARCH,
+                                this.getClass().getSimpleName(),
+                                System.currentTimeMillis(),
+                                null)
+                );
+        BookData book = storageAdapter.getBook(uid);
+        if (book != null) {
             books.add(book);
             result.setCode(HttpAdapter.SC_OK);
-        }else{
+        } else {
             result.setCode(HttpAdapter.SC_NOT_FOUND);
         }
         result.setData(books);
@@ -94,8 +103,16 @@ public class BookshelfService extends Kernel {
 
     private HttpResult search(BookData book) {
         HttpResult result = new HttpResult();
-        ArrayList books = new ArrayList();
-        result.setCode(HttpAdapter.SC_NOT_IMPLEMENTED);
+        boolean eventPropagated
+                = EventQueueAdapterIface.OK == eventsAdapter.push(
+                        new Event(
+                                Event.BOOK_SEARCH,
+                                this.getClass().getSimpleName(),
+                                System.currentTimeMillis(),
+                                null)
+                );
+        ArrayList books = new ArrayList(storageAdapter.search(book));
+        result.setCode(HttpAdapter.SC_OK);
         result.setData(books);
         return result;
     }
@@ -137,7 +154,7 @@ public class BookshelfService extends Kernel {
     public Object modifyBook(RequestObject request) {
         HttpResult result = new HttpResult();
 
-        //TODO: get UID
+        //get UID
         String uid = request.pathExt;
 
         //create data object based on request parmeters
@@ -155,27 +172,47 @@ public class BookshelfService extends Kernel {
             books.add(storageAdapter.getBook(uid));
             result.setData(books);
             result.setCode(HttpAdapter.SC_ACCEPTED);
+            //publish event
+            boolean eventPropagated
+                    = EventQueueAdapterIface.OK == eventsAdapter.push(
+                            new Event(
+                                    Event.BOOK_MODIFY,
+                                    this.getClass().getSimpleName(),
+                                    System.currentTimeMillis(),
+                                    null)
+                    );
         } else {
             result.setData(books);
             result.setCode(HttpAdapter.SC_NOT_FOUND);
         }
-
-        //publish event
-        boolean eventPropagated
-                = EventQueueAdapterIface.OK == eventsAdapter.push(
-                        new Event(
-                                Event.BOOK_MODIFY,
-                                this.getClass().getSimpleName(),
-                                System.currentTimeMillis(),
-                                null)
-                );
 
         return result;
     }
 
     @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "DELETE")
     public Object removeBook(RequestObject request) {
-        return null;
+        HttpResult result = new HttpResult();
+        String uid = request.pathExt;
+        int success = storageAdapter.removeBook(uid);
+        switch (success) {
+            case DataStorageAdapterIface.OK:
+                result.setCode(HttpAdapter.SC_OK);
+                boolean eventPropagated
+                        = EventQueueAdapterIface.OK == eventsAdapter.push(
+                                new Event(
+                                        Event.BOOK_DEL,
+                                        this.getClass().getSimpleName(),
+                                        System.currentTimeMillis(),
+                                        null)
+                        );
+                break;
+            case DataStorageAdapterIface.NOT_FOUND:
+                result.setCode(HttpAdapter.SC_NOT_FOUND);
+                break;
+            default:
+                result.setCode(HttpAdapter.SC_INTERNAL_SERVER_ERROR);
+        }
+        return result;
     }
 
     /**

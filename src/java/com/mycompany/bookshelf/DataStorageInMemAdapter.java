@@ -44,23 +44,23 @@ public class DataStorageInMemAdapter implements DataStorageAdapterIface, Adapter
     }
     
     public BookData addBook(BookData data){
-        return DataStorage.getInstance().addBook(data);
+        return InMemDataStorage.getInstance().addBook(data);
     }
 
     public BookData getBook(String id){
-        return DataStorage.getInstance().getBook(id);
+        return InMemDataStorage.getInstance().getBook(id);
     }
 
     public int modifyBook(BookData data){
-        return DataStorage.getInstance().modifyBook(data);
+        return InMemDataStorage.getInstance().modifyBook(data);
     }
 
     public int removeBook(String id){
-        return DataStorage.getInstance().removeBook(id);
+        return InMemDataStorage.getInstance().removeBook(id);
     }
 
     public List<BookData> search(BookData queryData){
-        List<BookData> result= DataStorage.getInstance().search(queryData);
+        List<BookData> result= InMemDataStorage.getInstance().search(queryData);
         if(showCounter){
             System.out.println("found "+result+" books");
         }
