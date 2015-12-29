@@ -19,19 +19,18 @@ import com.gskorupa.cricket.AdapterHook;
 import com.gskorupa.cricket.ArgumentParser;
 import com.gskorupa.cricket.in.HttpAdapter;
 import com.gskorupa.cricket.Httpd;
+import com.gskorupa.cricket.Kernel;
 import com.gskorupa.cricket.RequestObject;
 import java.util.logging.Logger;
-import com.gskorupa.cricket.Service;
 import static java.lang.Thread.MIN_PRIORITY;
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * SimpleService
  *
  * @author greg
  */
-public class BookshelfService extends Service {
+public class BookshelfService extends Kernel {
 
     // emergency logger
     private static final Logger logger = Logger.getLogger(com.mycompany.bookshelf.BookshelfService.class.getName());
@@ -94,7 +93,11 @@ public class BookshelfService extends Service {
     }
 
     private HttpResult search(BookData book) {
-        return null;
+        HttpResult result = new HttpResult();
+        ArrayList books = new ArrayList();
+        result.setCode(HttpAdapter.SC_NOT_IMPLEMENTED);
+        result.setData(books);
+        return result;
     }
 
     @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "POST")
