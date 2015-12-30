@@ -171,7 +171,7 @@ public class BookshelfService extends Kernel {
         if (success == DataStorageAdapterIface.OK) {
             books.add(storageAdapter.getBook(uid));
             result.setData(books);
-            result.setCode(HttpAdapter.SC_ACCEPTED);
+            result.setCode(HttpAdapter.SC_OK);
             //publish event
             boolean eventPropagated
                     = EventQueueAdapterIface.OK == eventsAdapter.push(
