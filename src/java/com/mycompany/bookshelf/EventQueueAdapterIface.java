@@ -15,6 +15,8 @@
  */
 package com.mycompany.bookshelf;
 
+import com.gskorupa.cricket.Event;
+
 /**
  *
  * @author greg

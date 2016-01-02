@@ -16,6 +16,7 @@
 package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.Adapter;
+import com.gskorupa.cricket.Event;
 import java.util.Properties;
 
 /**
@@ -39,7 +40,7 @@ public class EventQueueMockAdapter implements EventQueueAdapterIface, Adapter{
     }
 
     public Event pull(String eventType){
-        Event event=new Event(eventType, "MOCK", System.currentTimeMillis(), null);
+        Event event=new Event(eventType, "MOCK", "this is mock event");
         return event;
     }
 

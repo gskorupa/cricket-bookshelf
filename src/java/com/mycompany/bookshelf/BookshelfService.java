@@ -15,12 +15,15 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.AdapterHook;
 import com.gskorupa.cricket.ArgumentParser;
+import com.gskorupa.cricket.Event;
+import com.gskorupa.cricket.EventHook;
+import com.gskorupa.cricket.HttpAdapterHook;
 import com.gskorupa.cricket.in.HttpAdapter;
 import com.gskorupa.cricket.Httpd;
 import com.gskorupa.cricket.Kernel;
 import com.gskorupa.cricket.RequestObject;
+import com.gskorupa.cricket.out.LoggerAdapterIface;
 import java.util.logging.Logger;
 import static java.lang.Thread.MIN_PRIORITY;
 import java.util.ArrayList;
@@ -39,24 +42,27 @@ public class BookshelfService extends Kernel {
     DataStorageAdapterIface storageAdapter = null;
     EventQueueAdapterIface eventsAdapter = null;
     BookshelfHttpAdapterIface httpAdapter = null;
+    LoggerAdapterIface logHandler = null;
 
     public BookshelfService() {
 
-        fields = new Object[3];
-        fields[0] = storageAdapter;
-        fields[1] = eventsAdapter;
-        fields[2] = httpAdapter;
-        adapters = new Class[3];
-        adapters[0] = DataStorageAdapterIface.class;
-        adapters[1] = EventQueueAdapterIface.class;
-        adapters[2] = BookshelfHttpAdapterIface.class;
+        adapters = new Object[4];
+        adapters[0] = storageAdapter;
+        adapters[1] = eventsAdapter;
+        adapters[2] = httpAdapter;
+        adapters[3] = logHandler;
+        adapterClasses = new Class[4];
+        adapterClasses[0] = DataStorageAdapterIface.class;
+        adapterClasses[1] = EventQueueAdapterIface.class;
+        adapterClasses[2] = BookshelfHttpAdapterIface.class;
+        adapterClasses[3] = LoggerAdapterIface.class;
     }
 
     @Override
     public void getAdapters() {
-        storageAdapter = (DataStorageAdapterIface) super.fields[0];
-        eventsAdapter = (EventQueueAdapterIface) super.fields[1];
-        httpAdapter = (BookshelfHttpAdapterIface) super.fields[2];
+        storageAdapter = (DataStorageAdapterIface) super.adapters[0];
+        eventsAdapter = (EventQueueAdapterIface) super.adapters[1];
+        httpAdapter = (BookshelfHttpAdapterIface) super.adapters[2];
     }
 
     @Override
@@ -64,7 +70,18 @@ public class BookshelfService extends Kernel {
         System.out.println("Hi! I'm " + this.getClass().getSimpleName());
     }
 
-    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "GET")
+    @EventHook(eventType = "LOGGING")
+    public void logEvent(com.gskorupa.cricket.Event event) {
+        logHandler.log(event);
+    }
+
+    @EventHook(eventType = "*")
+    public void processEvent(com.gskorupa.cricket.Event event) {
+        //
+        eventsAdapter.push(event);
+    }
+
+    @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "GET")
     public Object getBooks(RequestObject request) {
         String uid = request.pathExt;
         //System.out.println("PATH_EXT=" + request.pathExt);
@@ -82,14 +99,12 @@ public class BookshelfService extends Kernel {
         HttpResult result = new HttpResult();
         ArrayList books = new ArrayList();
         //publish event
-        boolean eventPropagated
-                = EventQueueAdapterIface.OK == eventsAdapter.push(
-                        new Event(
-                                Event.BOOK_SEARCH,
-                                this.getClass().getSimpleName(),
-                                System.currentTimeMillis(),
-                                null)
-                );
+        processEvent(
+                new Event(
+                        EventOld.BOOK_SEARCH,
+                        this.getClass().getSimpleName(),
+                        null)
+        );
         BookData book = storageAdapter.getBook(uid);
         if (book != null) {
             books.add(book);
@@ -103,21 +118,19 @@ public class BookshelfService extends Kernel {
 
     private HttpResult search(BookData book) {
         HttpResult result = new HttpResult();
-        boolean eventPropagated
-                = EventQueueAdapterIface.OK == eventsAdapter.push(
-                        new Event(
-                                Event.BOOK_SEARCH,
-                                this.getClass().getSimpleName(),
-                                System.currentTimeMillis(),
-                                null)
-                );
+        processEvent(
+                new Event(
+                        EventOld.BOOK_SEARCH,
+                        this.getClass().getSimpleName(),
+                        null)
+        );
         ArrayList books = new ArrayList(storageAdapter.search(book));
         result.setCode(HttpAdapter.SC_OK);
         result.setData(books);
         return result;
     }
 
-    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "POST")
+    @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "POST")
     public Object addBook(RequestObject request) {
         HttpResult result = new HttpResult();
 
@@ -135,14 +148,12 @@ public class BookshelfService extends Kernel {
         result.setData(books);
 
         //publish event
-        boolean eventPropagated
-                = EventQueueAdapterIface.OK == eventsAdapter.push(
-                        new Event(
-                                Event.BOOK_NEW,
-                                this.getClass().getSimpleName(),
-                                System.currentTimeMillis(),
-                                null)
-                );
+        processEvent(
+                new Event(
+                        EventOld.BOOK_NEW,
+                        this.getClass().getSimpleName(),
+                        null)
+        );
 
         //set result code which will be sent in http response
         result.setCode(HttpAdapter.SC_CREATED);
@@ -150,7 +161,7 @@ public class BookshelfService extends Kernel {
         return result;
     }
 
-    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "PUT")
+    @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "PUT")
     public Object modifyBook(RequestObject request) {
         HttpResult result = new HttpResult();
 
@@ -173,14 +184,12 @@ public class BookshelfService extends Kernel {
             result.setData(books);
             result.setCode(HttpAdapter.SC_OK);
             //publish event
-            boolean eventPropagated
-                    = EventQueueAdapterIface.OK == eventsAdapter.push(
-                            new Event(
-                                    Event.BOOK_MODIFY,
-                                    this.getClass().getSimpleName(),
-                                    System.currentTimeMillis(),
-                                    null)
-                    );
+            processEvent(
+                    new Event(
+                            EventOld.BOOK_MODIFY,
+                            this.getClass().getSimpleName(),
+                            null)
+            );
         } else {
             result.setData(books);
             result.setCode(HttpAdapter.SC_NOT_FOUND);
@@ -189,7 +198,7 @@ public class BookshelfService extends Kernel {
         return result;
     }
 
-    @AdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "DELETE")
+    @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "DELETE")
     public Object removeBook(RequestObject request) {
         HttpResult result = new HttpResult();
         String uid = request.pathExt;
@@ -197,14 +206,12 @@ public class BookshelfService extends Kernel {
         switch (success) {
             case DataStorageAdapterIface.OK:
                 result.setCode(HttpAdapter.SC_OK);
-                boolean eventPropagated
-                        = EventQueueAdapterIface.OK == eventsAdapter.push(
-                                new Event(
-                                        Event.BOOK_DEL,
-                                        this.getClass().getSimpleName(),
-                                        System.currentTimeMillis(),
-                                        null)
-                        );
+                processEvent(
+                        new Event(
+                                EventOld.BOOK_DEL,
+                                this.getClass().getSimpleName(),
+                                null)
+                );
                 break;
             case DataStorageAdapterIface.NOT_FOUND:
                 result.setCode(HttpAdapter.SC_NOT_FOUND);
