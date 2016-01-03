@@ -63,6 +63,7 @@ public class BookshelfService extends Kernel {
         storageAdapter = (DataStorageAdapterIface) super.adapters[0];
         eventsAdapter = (EventQueueAdapterIface) super.adapters[1];
         httpAdapter = (BookshelfHttpAdapterIface) super.adapters[2];
+        logHandler = (LoggerAdapterIface) super.adapters[3];
     }
 
     @Override

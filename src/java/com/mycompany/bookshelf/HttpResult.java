@@ -17,6 +17,7 @@ package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.in.Result;
 import java.util.List;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONStringer;
 
@@ -24,25 +25,25 @@ import org.json.JSONStringer;
  *
  * @author greg
  */
-public class HttpResult implements Result{
-    
+public class HttpResult implements Result {
+
     private List<BookData> books;
     private int code;
     private String message;
-    
-    public void setData(Object books){
-        this.books=(List)books;
+
+    public void setData(Object books) {
+        this.books = (List) books;
     }
-    
-    public Object getData(){
+
+    public Object getData() {
         return books;
     }
-    
-    public void setCode(int code){
-        this.code=code;
+
+    public void setCode(int code) {
+        this.code = code;
     }
-    
-    public int getCode(){
+
+    public int getCode() {
         return code;
     }
 
@@ -59,21 +60,25 @@ public class HttpResult implements Result{
     public void setMessage(String message) {
         this.message = message;
     }
-    
-    public String toJsonString(){
-        String jst=
-                new JSONStringer()
-                        .object()
-                            .key("code")
-                            .value(getCode())
-                            .key("message")
-                            .value(getMessage())
-                            //.key("data")
-                            //.value(new JSONObject(data))
-                        .endObject()
-                        .toString()
-                +"\n";
-        return jst;
+
+    public String toJsonString() {
+
+        JSONObject bookObj;
+        JSONArray jsa = new JSONArray();
+        for (BookData book : books) {
+            bookObj = new JSONObject();
+            bookObj.put("uid", book.getID());
+            bookObj.put("author", book.getAuthor());
+            bookObj.put("title", book.getTitle());
+            bookObj.put("publisher", book.getPublisher());
+            bookObj.put("publish-date", book.getPublishDate());
+            jsa.put(bookObj);
+        }
+        JSONObject obj = new JSONObject();
+        obj.put("code", getCode());
+        obj.put("message", getMessage());
+        obj.put("books", jsa);
+        return obj.toString() + "\n";
     }
 
     public String toXmlString() {
@@ -83,5 +88,5 @@ public class HttpResult implements Result{
     public String toCsvString() {
         return null;
     }
-    
+
 }
