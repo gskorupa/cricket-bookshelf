@@ -30,10 +30,6 @@ public class EventQueueMockAdapter implements EventQueueAdapterIface, Adapter{
     */
     public void loadProperties(Properties properties){
     }
-    
-    public String getContext(){
-        return null;
-    }
 
     public int push(Event event){
         return EventQueueAdapterIface.OK;
