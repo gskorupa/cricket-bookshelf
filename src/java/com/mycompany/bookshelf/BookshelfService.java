@@ -42,7 +42,7 @@ public class BookshelfService extends Kernel {
     DataStorageAdapterIface storageAdapter = null;
     EventQueueAdapterIface eventsAdapter = null;
     BookshelfHttpAdapterIface httpAdapter = null;
-    LoggerAdapterIface logHandler = null;
+    LoggerAdapterIface logAdapter = null;
 
     public BookshelfService() {
 
@@ -50,7 +50,7 @@ public class BookshelfService extends Kernel {
         adapters[0] = storageAdapter;
         adapters[1] = eventsAdapter;
         adapters[2] = httpAdapter;
-        adapters[3] = logHandler;
+        adapters[3] = logAdapter;
         adapterClasses = new Class[4];
         adapterClasses[0] = DataStorageAdapterIface.class;
         adapterClasses[1] = EventQueueAdapterIface.class;
@@ -63,7 +63,7 @@ public class BookshelfService extends Kernel {
         storageAdapter = (DataStorageAdapterIface) super.adapters[0];
         eventsAdapter = (EventQueueAdapterIface) super.adapters[1];
         httpAdapter = (BookshelfHttpAdapterIface) super.adapters[2];
-        logHandler = (LoggerAdapterIface) super.adapters[3];
+        logAdapter = (LoggerAdapterIface) super.adapters[3];
     }
 
     @Override
@@ -71,14 +71,13 @@ public class BookshelfService extends Kernel {
         System.out.println("Hi! I'm " + this.getClass().getSimpleName());
     }
 
-    @EventHook(eventType = "LOGGING")
+    @EventHook(eventCategory = "LOG")
     public void logEvent(com.gskorupa.cricket.Event event) {
-        logHandler.log(event);
+        logAdapter.log(event);
     }
 
-    @EventHook(eventType = "*")
+    @EventHook(eventCategory = "*")
     public void processEvent(com.gskorupa.cricket.Event event) {
-        //
         eventsAdapter.push(event);
     }
 
@@ -102,8 +101,9 @@ public class BookshelfService extends Kernel {
         //publish event
         processEvent(
                 new Event(
-                        EventOld.BOOK_SEARCH,
                         this.getClass().getSimpleName(),
+                        "EVENT",
+                        EventOld.BOOK_SEARCH,
                         null)
         );
         BookData book = storageAdapter.getBook(uid);
@@ -121,8 +121,9 @@ public class BookshelfService extends Kernel {
         HttpResult result = new HttpResult();
         processEvent(
                 new Event(
-                        EventOld.BOOK_SEARCH,
                         this.getClass().getSimpleName(),
+                        "EVENT",
+                        EventOld.BOOK_SEARCH,
                         null)
         );
         ArrayList books = new ArrayList(storageAdapter.search(book));
@@ -151,8 +152,9 @@ public class BookshelfService extends Kernel {
         //publish event
         processEvent(
                 new Event(
-                        EventOld.BOOK_NEW,
                         this.getClass().getSimpleName(),
+                        "EVENT",
+                        EventOld.BOOK_NEW,
                         null)
         );
 
@@ -187,8 +189,9 @@ public class BookshelfService extends Kernel {
             //publish event
             processEvent(
                     new Event(
-                            EventOld.BOOK_MODIFY,
                             this.getClass().getSimpleName(),
+                            "EVENT",
+                            EventOld.BOOK_MODIFY,
                             null)
             );
         } else {
@@ -209,8 +212,9 @@ public class BookshelfService extends Kernel {
                 result.setCode(HttpAdapter.SC_OK);
                 processEvent(
                         new Event(
-                                EventOld.BOOK_DEL,
                                 this.getClass().getSimpleName(),
+                                "EVENT",
+                                EventOld.BOOK_DEL,
                                 null)
                 );
                 break;

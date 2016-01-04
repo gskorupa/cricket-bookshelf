@@ -35,8 +35,8 @@ public class EventQueueMockAdapter implements EventQueueAdapterIface, Adapter{
         return EventQueueAdapterIface.OK;
     }
 
-    public Event pull(String eventType){
-        Event event=new Event(eventType, "MOCK", "this is mock event");
+    public Event pull(String eventCategory){
+        Event event=new Event(eventCategory, "", "MOCK", "this is mock event");
         return event;
     }
 
