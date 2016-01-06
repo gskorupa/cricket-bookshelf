@@ -16,7 +16,6 @@
 package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.Adapter;
-import com.gskorupa.cricket.in.EchoResult;
 import com.gskorupa.cricket.in.HttpAdapter;
 import com.gskorupa.cricket.in.Result;
 import java.util.Properties;
@@ -30,7 +29,6 @@ public class BookshelfHttpAdapter extends HttpAdapter implements BookshelfHttpAd
     public void loadProperties(Properties properties) {
         setContext(properties.getProperty("BookshelfHttpAdapterIface-context"));
         System.out.println("context=" + getContext());
-        getServiceHooks(); 
     }
     
     @Override

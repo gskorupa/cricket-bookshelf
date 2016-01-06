@@ -241,9 +241,7 @@ public class BookshelfService extends Kernel {
             System.out.println(new BookshelfService().getHelp());
             System.exit(-1);
         }
-
         try {
-
             if (arguments.containsKey("config")) {
                 service = (BookshelfService) BookshelfService.getInstance(BookshelfService.class, arguments.get("config"));
             } else {
@@ -252,31 +250,7 @@ public class BookshelfService extends Kernel {
             service.getAdapters();
 
             if (arguments.containsKey("run")) {
-                if (service.isHttpHandlerLoaded()) {
-                    System.out.println("Starting http server ...");
-                    Runtime.getRuntime().addShutdownHook(
-                            new Thread() {
-                        public void run() {
-                            try {
-                                Thread.sleep(200);
-                                //some cleaning up code could be added here ... if required
-                                System.out.println("\nShutdown ...");
-                                service.getHttpd().server.stop(MIN_PRIORITY);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                    service.setHttpd(new Httpd(service));
-                    service.getHttpd().run();
-                    System.out.println("Started. Press Ctrl-C to stop");
-                    while (true) {
-                        Thread.sleep(100);
-                    }
-                } else {
-                    System.out.println("Couldn't find any http request hook method. Exiting ...");
-                    System.exit(MIN_PRIORITY);
-                }
+                service.start();
             } else {
                 service.runOnce();
             }
