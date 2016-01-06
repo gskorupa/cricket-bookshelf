@@ -20,12 +20,10 @@ import com.gskorupa.cricket.Event;
 import com.gskorupa.cricket.EventHook;
 import com.gskorupa.cricket.HttpAdapterHook;
 import com.gskorupa.cricket.in.HttpAdapter;
-import com.gskorupa.cricket.Httpd;
 import com.gskorupa.cricket.Kernel;
 import com.gskorupa.cricket.RequestObject;
 import com.gskorupa.cricket.out.LoggerAdapterIface;
 import java.util.logging.Logger;
-import static java.lang.Thread.MIN_PRIORITY;
 import java.util.ArrayList;
 
 /**
@@ -47,33 +45,34 @@ public class BookshelfService extends Kernel {
     public BookshelfService() {
 
         adapters = new Object[4];
-        adapters[0] = storageAdapter;
-        adapters[1] = eventsAdapter;
-        adapters[2] = httpAdapter;
-        adapters[3] = logAdapter;
+        adapters[0] = logAdapter;
+        adapters[1] = storageAdapter;
+        adapters[2] = eventsAdapter;
+        adapters[3] = httpAdapter;
+
         adapterClasses = new Class[4];
-        adapterClasses[0] = DataStorageAdapterIface.class;
-        adapterClasses[1] = EventQueueAdapterIface.class;
-        adapterClasses[2] = BookshelfHttpAdapterIface.class;
-        adapterClasses[3] = LoggerAdapterIface.class;
+        adapterClasses[0] = LoggerAdapterIface.class;
+        adapterClasses[1] = DataStorageAdapterIface.class;
+        adapterClasses[2] = EventQueueAdapterIface.class;
+        adapterClasses[3] = BookshelfHttpAdapterIface.class;
     }
 
     @Override
     public void getAdapters() {
-        storageAdapter = (DataStorageAdapterIface) super.adapters[0];
-        eventsAdapter = (EventQueueAdapterIface) super.adapters[1];
-        httpAdapter = (BookshelfHttpAdapterIface) super.adapters[2];
-        logAdapter = (LoggerAdapterIface) super.adapters[3];
+        logAdapter = (LoggerAdapterIface) super.adapters[0];
+        storageAdapter = (DataStorageAdapterIface) super.adapters[1];
+        eventsAdapter = (EventQueueAdapterIface) super.adapters[2];
+        httpAdapter = (BookshelfHttpAdapterIface) super.adapters[3];
     }
 
     @Override
     public void runOnce() {
         //write to logs
-        Event ev= new Event(
-                        this.getClass().getSimpleName(),
-                        Event.CATEGORY_LOG, // equals "LOG"
-                        Event.LOG_INFO,     // equals "INFO"
-                        null);
+        Event ev = new Event(
+                this.getClass().getSimpleName(),
+                Event.CATEGORY_LOG, // equals "LOG"
+                Event.LOG_INFO, // equals "INFO"
+                null);
         logEvent(ev);
         //alternatively:
         //logAdapter.log(ev);
@@ -141,7 +140,7 @@ public class BookshelfService extends Kernel {
         ArrayList books = new ArrayList();
         books.add(storageAdapter.addBook(book));
         result.setData(books);
-        
+
         //set result code which will be sent in http response
         result.setCode(HttpAdapter.SC_CREATED);
 
