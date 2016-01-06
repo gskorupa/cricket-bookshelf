@@ -31,6 +31,7 @@ public class BookshelfHttpAdapter extends HttpAdapter implements BookshelfHttpAd
         System.out.println("context=" + getContext());
     }
     
+    /*
     @Override
     public String formatResponse(int type, Result result){
         String response="";
@@ -47,4 +48,5 @@ public class BookshelfHttpAdapter extends HttpAdapter implements BookshelfHttpAd
         }
         return response;
     }
+    */
 }

@@ -68,6 +68,15 @@ public class BookshelfService extends Kernel {
 
     @Override
     public void runOnce() {
+        //write to logs
+        Event ev= new Event(
+                        this.getClass().getSimpleName(),
+                        Event.CATEGORY_LOG, // equals "LOG"
+                        Event.LOG_INFO,     // equals "INFO"
+                        null);
+        logEvent(ev);
+        //alternatively:
+        //logAdapter.log(ev);
         System.out.println("Hi! I'm " + this.getClass().getSimpleName());
     }
 
@@ -84,7 +93,6 @@ public class BookshelfService extends Kernel {
     @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "GET")
     public Object getBooks(RequestObject request) {
         String uid = request.pathExt;
-        //System.out.println("PATH_EXT=" + request.pathExt);
         if (uid.isEmpty()) {
             BookData book = new BookData();
             //TODO: parameters
@@ -98,14 +106,6 @@ public class BookshelfService extends Kernel {
     private HttpResult get(String uid) {
         HttpResult result = new HttpResult();
         ArrayList books = new ArrayList();
-        //publish event
-        processEvent(
-                new Event(
-                        this.getClass().getSimpleName(),
-                        "EVENT",
-                        EventOld.BOOK_SEARCH,
-                        null)
-        );
         BookData book = storageAdapter.getBook(uid);
         if (book != null) {
             books.add(book);
@@ -119,13 +119,6 @@ public class BookshelfService extends Kernel {
 
     private HttpResult search(BookData book) {
         HttpResult result = new HttpResult();
-        processEvent(
-                new Event(
-                        this.getClass().getSimpleName(),
-                        "EVENT",
-                        EventOld.BOOK_SEARCH,
-                        null)
-        );
         ArrayList books = new ArrayList(storageAdapter.search(book));
         result.setCode(HttpAdapter.SC_OK);
         result.setData(books);
@@ -148,16 +141,7 @@ public class BookshelfService extends Kernel {
         ArrayList books = new ArrayList();
         books.add(storageAdapter.addBook(book));
         result.setData(books);
-
-        //publish event
-        processEvent(
-                new Event(
-                        this.getClass().getSimpleName(),
-                        "EVENT",
-                        EventOld.BOOK_NEW,
-                        null)
-        );
-
+        
         //set result code which will be sent in http response
         result.setCode(HttpAdapter.SC_CREATED);
 
@@ -186,14 +170,6 @@ public class BookshelfService extends Kernel {
             books.add(storageAdapter.getBook(uid));
             result.setData(books);
             result.setCode(HttpAdapter.SC_OK);
-            //publish event
-            processEvent(
-                    new Event(
-                            this.getClass().getSimpleName(),
-                            "EVENT",
-                            EventOld.BOOK_MODIFY,
-                            null)
-            );
         } else {
             result.setData(books);
             result.setCode(HttpAdapter.SC_NOT_FOUND);
@@ -210,13 +186,6 @@ public class BookshelfService extends Kernel {
         switch (success) {
             case DataStorageAdapterIface.OK:
                 result.setCode(HttpAdapter.SC_OK);
-                processEvent(
-                        new Event(
-                                this.getClass().getSimpleName(),
-                                "EVENT",
-                                EventOld.BOOK_DEL,
-                                null)
-                );
                 break;
             case DataStorageAdapterIface.NOT_FOUND:
                 result.setCode(HttpAdapter.SC_NOT_FOUND);

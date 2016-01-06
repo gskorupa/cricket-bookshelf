@@ -16,6 +16,8 @@
 package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.Adapter;
+import com.gskorupa.cricket.Event;
+import com.gskorupa.cricket.out.OutboundAdapter;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -24,47 +26,57 @@ import java.util.logging.Logger;
  *
  * @author greg
  */
-public class DataStorageInMemAdapter implements DataStorageAdapterIface, Adapter{
-    
+public class DataStorageInMemAdapter extends OutboundAdapter implements DataStorageAdapterIface, Adapter {
+
     private static final Logger logger = Logger.getLogger(com.mycompany.bookshelf.DataStorageInMemAdapter.class.getName());
-    
+
     private boolean showCounter = false;
-    
+
     /**
-    * Read properties with names started with "DataStorageAdapterIface-"
-    */
-    public void loadProperties(Properties properties){
-        String metricProp=properties.getProperty("DataStorageAdapterIface-counter");
-        showCounter=(metricProp!=null && metricProp.equalsIgnoreCase("true"));
-        System.out.println("counter="+showCounter);
+     * Read properties with names started with "DataStorageAdapterIface-"
+     */
+    public void loadProperties(Properties properties) {
+        String metricProp = properties.getProperty("DataStorageAdapterIface-counter");
+        showCounter = (metricProp != null && metricProp.equalsIgnoreCase("true"));
+        System.out.println("counter=" + showCounter);
     }
-    
-    public String getContext(){
-        return null;
-    }
-    
-    public BookData addBook(BookData data){
+
+    public BookData addBook(BookData data) {
+        sendEvent(
+                new Event(
+                        this.getClass().getSimpleName(),
+                        "EVENT",
+                        "BOOK_NEW",
+                        null)
+        );
         return InMemDataStorage.getInstance().addBook(data);
     }
 
-    public BookData getBook(String id){
+    public BookData getBook(String id) {
+        sendEvent(
+                new Event(
+                        this.getClass().getSimpleName(),
+                        "EVENT",
+                        "BOOK_SEARCH",
+                        null)
+        );
         return InMemDataStorage.getInstance().getBook(id);
     }
 
-    public int modifyBook(BookData data){
+    public int modifyBook(BookData data) {
         return InMemDataStorage.getInstance().modifyBook(data);
     }
 
-    public int removeBook(String id){
+    public int removeBook(String id) {
         return InMemDataStorage.getInstance().removeBook(id);
     }
 
-    public List<BookData> search(BookData queryData){
-        List<BookData> result= InMemDataStorage.getInstance().search(queryData);
-        if(showCounter){
-            System.out.println("found "+result+" books");
+    public List<BookData> search(BookData queryData) {
+        List<BookData> result = InMemDataStorage.getInstance().search(queryData);
+        if (showCounter) {
+            System.out.println("found " + result + " books");
         }
         return result;
     }
-    
+
 }

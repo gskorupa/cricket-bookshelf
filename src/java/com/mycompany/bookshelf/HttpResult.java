@@ -17,9 +17,6 @@ package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.in.Result;
 import java.util.List;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONStringer;
 
 /**
  *
@@ -60,7 +57,7 @@ public class HttpResult implements Result {
     public void setMessage(String message) {
         this.message = message;
     }
-
+/*
     public String toJsonString() {
 
         JSONObject bookObj;
@@ -88,5 +85,5 @@ public class HttpResult implements Result {
     public String toCsvString() {
         return null;
     }
-
+*/
 }

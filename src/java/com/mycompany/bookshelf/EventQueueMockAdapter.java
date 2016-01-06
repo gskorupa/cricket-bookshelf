@@ -17,26 +17,38 @@ package com.mycompany.bookshelf;
 
 import com.gskorupa.cricket.Adapter;
 import com.gskorupa.cricket.Event;
+import com.gskorupa.cricket.out.OutboundAdapter;
 import java.util.Properties;
 
 /**
  *
  * @author greg
  */
-public class EventQueueMockAdapter implements EventQueueAdapterIface, Adapter{
-    
+public class EventQueueMockAdapter extends OutboundAdapter implements EventQueueAdapterIface, Adapter {
+
     /**
-    * Read properties with names started with "DataStorageAdapterIface-"
-    */
-    public void loadProperties(Properties properties){
+     * Read properties with names started with "DataStorageAdapterIface-"
+     */
+    public void loadProperties(Properties properties) {
     }
 
-    public int push(Event event){
+    public int push(Event event) {
+        //we can log usage of this method sending a new event
+        //having "LOG" category
+        sendEvent(
+                new Event(
+                        "EventQueueMockAdapter",
+                        "LOG",
+                        "INFO",
+                        "event " + event.getCategory() +"."+event.getType() + " pushed"
+                )
+        );
+        //the method does nothing
         return EventQueueAdapterIface.OK;
     }
 
-    public Event pull(String eventCategory){
-        Event event=new Event(eventCategory, "", "MOCK", "this is mock event");
+    public Event pull(String eventCategory) {
+        Event event = new Event("EventQueueMockAdapter", eventCategory, "MOCK", "this is mock event");
         return event;
     }
 
