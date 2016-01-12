@@ -5,9 +5,11 @@
     <description></description>
         
     <!-- set your local properties for this build -->
-    <property name="version" value="1.0-B2"/>
+    <property name="version" value="1.0-B3"/>
+    <!--
     <property name="tomcat-home" value="/home/greg/apache-tomcat-7.0.67" />
-    <property name="cricket-jar-location" value="lib/cricket-1.0-B2.jar" />
+    -->
+    <property name="cricket-jar-location" value="lib/cricket-1.0-B3.jar" />
     
     <!-- do not modify properties below -->
     <property name="src" location="src/java"/>
@@ -18,13 +20,13 @@
     
     <path id="project-classpath">
         <pathelement location="${cricket-jar-location}"/>
+        <!--
         <fileset dir="${tomcat-home}/bin" includes="*.jar" />
         <fileset dir="${tomcat-home}/lib" includes="*.jar" />
+        -->
     </path>
 
     <target name="init">
-        <!-- Create the time stamp. For future use. -->
-        <tstamp/>
         <!-- Create the build directory structure used by compile -->
         <mkdir dir="${build}"/>
     </target>
@@ -67,6 +69,5 @@
             <zipfileset src="${cricket-jar-location}" includes="**/*"/>
         </jar>
     </target>
-    
     
 </project>
