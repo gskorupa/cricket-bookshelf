@@ -90,8 +90,8 @@ public class BookshelfService extends Kernel {
     }
 
     @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "GET")
-    public Object getBooks(RequestObject request) {
-        String uid = request.pathExt;
+    public Object getBooks(Event requestEvent) {
+        String uid = ((RequestObject)requestEvent.getPayload()).pathExt;
         if (uid.isEmpty()) {
             BookData book = new BookData();
             //TODO: parameters
@@ -125,9 +125,9 @@ public class BookshelfService extends Kernel {
     }
 
     @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "POST")
-    public Object addBook(RequestObject request) {
+    public Object addBook(Event requestEvent) {
         HttpResult result = new HttpResult();
-
+        RequestObject request = (RequestObject)requestEvent.getPayload();
         //create data object based on request parmeters
         BookData book = new BookData();
         book.setAuthor((String) request.parameters.get("author"));
@@ -148,9 +148,9 @@ public class BookshelfService extends Kernel {
     }
 
     @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "PUT")
-    public Object modifyBook(RequestObject request) {
+    public Object modifyBook(Event requestEvent) {
         HttpResult result = new HttpResult();
-
+        RequestObject request = (RequestObject)requestEvent.getPayload();
         //get UID
         String uid = request.pathExt;
 
@@ -178,8 +178,9 @@ public class BookshelfService extends Kernel {
     }
 
     @HttpAdapterHook(handlerClassName = "BookshelfHttpAdapterIface", requestMethod = "DELETE")
-    public Object removeBook(RequestObject request) {
+    public Object removeBook(Event requestEvent) {
         HttpResult result = new HttpResult();
+        RequestObject request = (RequestObject)requestEvent.getPayload();
         String uid = request.pathExt;
         int success = storageAdapter.removeBook(uid);
         switch (success) {
