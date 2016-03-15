@@ -15,16 +15,19 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.ArgumentParser;
-import com.gskorupa.cricket.Event;
-import com.gskorupa.cricket.EventHook;
-import com.gskorupa.cricket.HttpAdapterHook;
-import com.gskorupa.cricket.in.HttpAdapter;
-import com.gskorupa.cricket.Kernel;
-import com.gskorupa.cricket.RequestObject;
-import com.gskorupa.cricket.out.LoggerAdapterIface;
-import java.util.logging.Logger;
 import java.util.ArrayList;
+import org.cricketmsf.Event;
+import org.cricketmsf.EventHook;
+import org.cricketmsf.HttpAdapterHook;
+import org.cricketmsf.Kernel;
+import org.cricketmsf.RequestObject;
+import org.cricketmsf.in.http.EchoHttpAdapterIface;
+import org.cricketmsf.in.http.HtmlGenAdapterIface;
+import org.cricketmsf.in.http.HttpAdapter;
+import org.cricketmsf.in.scheduler.SchedulerIface;
+import org.cricketmsf.out.db.KeyValueCacheAdapterIface;
+import org.cricketmsf.out.html.HtmlReaderAdapterIface;
+import org.cricketmsf.out.log.LoggerAdapterIface;
 
 /**
  * SimpleService
@@ -33,59 +36,46 @@ import java.util.ArrayList;
  */
 public class BookshelfService extends Kernel {
 
-    // emergency logger
-    private static final Logger logger = Logger.getLogger(com.mycompany.bookshelf.BookshelfService.class.getName());
-
-    // adapters
+    //adapters
+    LoggerAdapterIface logAdapter = null;
+    EchoHttpAdapterIface httpAdapter = null;
+    KeyValueCacheAdapterIface cache = null;
+    SchedulerIface scheduler = null;
+    HtmlGenAdapterIface htmlAdapter = null;
+    HtmlReaderAdapterIface htmlReaderAdapter = null;
+    //
     DataStorageAdapterIface storageAdapter = null;
     EventQueueAdapterIface eventsAdapter = null;
-    BookshelfHttpAdapterIface httpAdapter = null;
-    LoggerAdapterIface logAdapter = null;
-
-    public BookshelfService() {
-
-        adapters = new Object[4];
-        adapters[0] = logAdapter;
-        adapters[1] = storageAdapter;
-        adapters[2] = eventsAdapter;
-        adapters[3] = httpAdapter;
-
-        adapterClasses = new Class[4];
-        adapterClasses[0] = LoggerAdapterIface.class;
-        adapterClasses[1] = DataStorageAdapterIface.class;
-        adapterClasses[2] = EventQueueAdapterIface.class;
-        adapterClasses[3] = BookshelfHttpAdapterIface.class;
-    }
+    BookshelfHttpAdapterIface bookshelfHttpAdapter = null;
+    
 
     @Override
     public void getAdapters() {
-        logAdapter = (LoggerAdapterIface) super.adapters[0];
-        storageAdapter = (DataStorageAdapterIface) super.adapters[1];
-        eventsAdapter = (EventQueueAdapterIface) super.adapters[2];
-        httpAdapter = (BookshelfHttpAdapterIface) super.adapters[3];
+        logAdapter = (LoggerAdapterIface) getRegistered("LoggerAdapterIface");
+        httpAdapter = (EchoHttpAdapterIface) getRegistered("EchoHttpAdapterIface");
+        cache = (KeyValueCacheAdapterIface) getRegistered("KeyValueCacheAdapterIface");
+        scheduler = (SchedulerIface) getRegistered("SchedulerIface");
+        htmlAdapter = (HtmlGenAdapterIface) getRegistered("HtmlGenAdapterIface");
+        htmlReaderAdapter = (HtmlReaderAdapterIface) getRegistered("HtmlReaderAdapterIface");
+        //
+        storageAdapter = (DataStorageAdapterIface) getRegistered("DataStorageAdapterIface");
+        eventsAdapter = (EventQueueAdapterIface) getRegistered("EventQueueAdapterIface");
+        bookshelfHttpAdapter = (BookshelfHttpAdapterIface) getRegistered("BookshelfHttpAdapterIface");
     }
 
     @Override
     public void runOnce() {
-        //write to logs
-        Event ev = new Event(
-                this.getClass().getSimpleName(),
-                Event.CATEGORY_LOG, // equals "LOG"
-                Event.LOG_INFO, // equals "INFO"
-                null);
-        logEvent(ev);
-        //alternatively:
-        //logAdapter.log(ev);
+        super.runOnce();
         System.out.println("Hi! I'm " + this.getClass().getSimpleName());
     }
 
     @EventHook(eventCategory = "LOG")
-    public void logEvent(com.gskorupa.cricket.Event event) {
+    public void logEvent(org.cricketmsf.Event event) {
         logAdapter.log(event);
     }
 
     @EventHook(eventCategory = "*")
-    public void processEvent(com.gskorupa.cricket.Event event) {
+    public void processEvent(org.cricketmsf.Event event) {
         eventsAdapter.push(event);
     }
 
@@ -194,39 +184,6 @@ public class BookshelfService extends Kernel {
                 result.setCode(HttpAdapter.SC_INTERNAL_SERVER_ERROR);
         }
         return result;
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-
-        final BookshelfService service;
-        ArgumentParser arguments = new ArgumentParser(args);
-        if (arguments.isProblem()) {
-            if (arguments.containsKey("error")) {
-                System.out.println(arguments.get("error"));
-            }
-            System.out.println(new BookshelfService().getHelp());
-            System.exit(-1);
-        }
-        try {
-            if (arguments.containsKey("config")) {
-                service = (BookshelfService) BookshelfService.getInstance(BookshelfService.class, arguments.get("config"));
-            } else {
-                service = (BookshelfService) BookshelfService.getInstanceUsingResources(BookshelfService.class);
-            }
-            service.getAdapters();
-
-            if (arguments.containsKey("run")) {
-                service.start();
-            } else {
-                service.runOnce();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }

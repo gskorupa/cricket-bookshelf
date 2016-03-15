@@ -15,12 +15,13 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.Adapter;
-import com.gskorupa.cricket.Event;
-import com.gskorupa.cricket.out.OutboundAdapter;
+import java.util.HashMap;
+import org.cricketmsf.Adapter;
+import org.cricketmsf.Event;
+import org.cricketmsf.out.OutboundAdapter;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
+import org.cricketmsf.Kernel;
 
 /**
  *
@@ -35,30 +36,30 @@ public class DataStorageInMemAdapter extends OutboundAdapter implements DataStor
     /**
      * Read properties with names started with "DataStorageAdapterIface-"
      */
-    public void loadProperties(Properties properties) {
-        String metricProp = properties.getProperty("DataStorageAdapterIface-counter");
+    public void loadProperties(HashMap<String,String> properties) {
+        String metricProp = properties.get("counter");
         showCounter = (metricProp != null && metricProp.equalsIgnoreCase("true"));
         System.out.println("counter=" + showCounter);
     }
 
     public BookData addBook(BookData data) {
-        sendEvent(
-                new Event(
-                        this.getClass().getSimpleName(),
-                        "EVENT",
-                        "BOOK_NEW",
-                        null)
+        Kernel.getInstance().handleEvent(
+            new Event(this.getClass().getSimpleName(), 
+                    Event.CATEGORY_LOG, 
+                    Event.LOG_INFO,
+                    "",
+                    "BOOK_NEW")
         );
         return InMemDataStorage.getInstance().addBook(data);
     }
 
     public BookData getBook(String id) {
-        sendEvent(
-                new Event(
-                        this.getClass().getSimpleName(),
-                        "EVENT",
-                        "BOOK_SEARCH",
-                        null)
+        Kernel.getInstance().handleEvent(
+            new Event(this.getClass().getSimpleName(), 
+                    Event.CATEGORY_LOG, 
+                    Event.LOG_INFO,
+                    "",
+                    "BOOK_SEARCH")
         );
         return InMemDataStorage.getInstance().getBook(id);
     }

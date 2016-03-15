@@ -15,10 +15,11 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.Adapter;
-import com.gskorupa.cricket.Event;
-import com.gskorupa.cricket.out.OutboundAdapter;
-import java.util.Properties;
+import java.util.HashMap;
+import org.cricketmsf.Adapter;
+import org.cricketmsf.Event;
+import org.cricketmsf.Kernel;
+import org.cricketmsf.out.OutboundAdapter;
 
 /**
  *
@@ -29,27 +30,29 @@ public class EventQueueMockAdapter extends OutboundAdapter implements EventQueue
     /**
      * Read properties with names started with "DataStorageAdapterIface-"
      */
-    public void loadProperties(Properties properties) {
+    public void loadProperties(HashMap<String,String> properties) {
     }
 
     public int push(Event event) {
         //we can log usage of this method sending a new event
-        //having "LOG" category
-        sendEvent(
-                new Event(
-                        "EventQueueMockAdapter",
-                        "LOG",
-                        "INFO",
-                        "event " + event.getCategory() +"."+event.getType() + " pushed"
-                )
+        Kernel.getInstance().handleEvent(
+            new Event(this.getClass().getSimpleName(), 
+                    Event.CATEGORY_LOG, 
+                    Event.LOG_INFO,
+                    "",
+                    "event " + event.getCategory() +"."+event.getType() + " pushed")
         );
         //the method does nothing
         return EventQueueAdapterIface.OK;
     }
 
     public Event pull(String eventCategory) {
-        Event event = new Event("EventQueueMockAdapter", eventCategory, "MOCK", "this is mock event");
-        return event;
+        return new Event(this.getClass().getSimpleName(), 
+                    eventCategory, 
+                    "MOCK",
+                    "",
+                    "this is mock event"
+        );
     }
 
 }

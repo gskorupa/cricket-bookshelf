@@ -15,10 +15,9 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.Adapter;
-import com.gskorupa.cricket.in.HttpAdapter;
-import com.gskorupa.cricket.in.Result;
-import java.util.Properties;
+import java.util.HashMap;
+import org.cricketmsf.Adapter;
+import org.cricketmsf.in.http.HttpAdapter;
 
 /**
  *
@@ -26,27 +25,8 @@ import java.util.Properties;
  */
 public class BookshelfHttpAdapter extends HttpAdapter implements BookshelfHttpAdapterIface, Adapter{
     
-    public void loadProperties(Properties properties) {
-        setContext(properties.getProperty("BookshelfHttpAdapterIface-context"));
+    public void loadProperties(HashMap<String,String> properties) {
+        setContext(properties.get("context"));
         System.out.println("context=" + getContext());
     }
-    
-    /*
-    @Override
-    public String formatResponse(int type, Result result){
-        String response="";
-        switch(type){
-            case HttpAdapter.XML:
-                response=((HttpResult)result).toXmlString();
-                break;
-            case HttpAdapter.CSV:
-                response=((HttpResult)result).toJsonString();
-                break;
-            default:
-                response=((HttpResult)result).toJsonString();
-                break;
-        }
-        return response;
-    }
-    */
 }

@@ -15,7 +15,7 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.in.Result;
+import org.cricketmsf.in.http.Result;
 import java.util.List;
 
 /**
@@ -57,33 +57,14 @@ public class HttpResult implements Result {
     public void setMessage(String message) {
         this.message = message;
     }
-/*
-    public String toJsonString() {
 
-        JSONObject bookObj;
-        JSONArray jsa = new JSONArray();
-        for (BookData book : books) {
-            bookObj = new JSONObject();
-            bookObj.put("uid", book.getID());
-            bookObj.put("author", book.getAuthor());
-            bookObj.put("title", book.getTitle());
-            bookObj.put("publisher", book.getPublisher());
-            bookObj.put("publish-date", book.getPublishDate());
-            jsa.put(bookObj);
-        }
-        JSONObject obj = new JSONObject();
-        obj.put("code", getCode());
-        obj.put("message", getMessage());
-        obj.put("books", jsa);
-        return obj.toString() + "\n";
-    }
-
-    public String toXmlString() {
-        return null;
-    }
-
-    public String toCsvString() {
-        return null;
-    }
-*/
+    public byte[] getPayload(){
+        return new byte[0];
+    };
+    
+    public void setPayload(byte[] payload){};
+    
+    public String getFileExtension(){ return ""; };
+    
+    public void setFileExtension(String fileExt){};
 }

@@ -15,7 +15,7 @@
  */
 package com.mycompany.bookshelf;
 
-import com.gskorupa.cricket.Event;
+import org.cricketmsf.Event;
 
 /**
  *
